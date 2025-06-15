@@ -3,16 +3,18 @@ import { computed, inject, Injectable, Injector, Signal, untracked } from "@angu
 import { key } from "../key.json";
 import { map } from "rxjs";
 import { toSignal } from "@angular/core/rxjs-interop";
+import { DomSanitizer, SafeResourceUrl, SafeUrl } from "@angular/platform-browser";
 
 @Injectable({providedIn: 'root'})
 export class ImageSearchService
 {
     readonly httpClient = inject(HttpClient);
     readonly injector = inject(Injector);
+    readonly sanitizer = inject(DomSanitizer);
 
-    readonly imageUrlMap: {[K in string]?: Signal<string | undefined>} = {};
+    readonly imageUrlMap: {[K in string]?: Signal<SafeUrl | undefined>} = {};
 
-    public getImage(text: string): Signal<string | undefined>
+    public getImage(text: string): Signal<SafeUrl | undefined>
     {
         if (null != this.imageUrlMap[text])
         {
@@ -21,7 +23,7 @@ export class ImageSearchService
 
         const ret = untracked(() => toSignal(
             this.httpClient.get<ImageResults>(`https://www.googleapis.com/customsearch/v1?key=${encodeURIComponent(key)}&cx=268a54f600bbd4c96&q=${encodeURIComponent(text)}&searchType=image&num=1`, {observe: 'body'})
-                .pipe(map(value => value.items[0].link)),
+                .pipe(map(value => this.sanitizer.bypassSecurityTrustUrl(value.items[0].link))),
             {
                 injector: this.injector
             }

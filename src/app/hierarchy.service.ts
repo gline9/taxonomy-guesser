@@ -10,14 +10,45 @@ export class HierarchyService
 
     public getSpeciesDetails(id: string): Species | undefined
     {
-        const hierarchy = this.hierarchyResource.value();
-
-        if (null == hierarchy)
+        if (!this.hierarchyResource.hasValue())
         {
             return undefined;
         }
 
-        return hierarchy[id];
+        return this.hierarchyResource.value()[id];
+    }
+
+    public getSpeciesHierarchy(id: string): HierarchyNode[] | undefined
+    {
+        if (!this.hierarchyResource.hasValue())
+        {
+            return undefined;
+        }
+
+        const hierarchy = this.hierarchyResource.value();
+        const retHierarchy: HierarchyNode[] = [];
+
+        let currentId = id;
+
+        while (null != hierarchy[currentId])
+        {
+            const currentNode = hierarchy[currentId];
+            retHierarchy.push({
+                name: currentNode.scientificName,
+                type: currentNode.type
+            });
+
+            if (currentId === currentNode.parentId)
+            {
+                break;
+            }
+
+            currentId = currentNode.parentId;
+        }
+
+        console.log("hierarchy", retHierarchy);
+
+        return retHierarchy.reverse();
     }
 }
 
@@ -31,4 +62,9 @@ export interface Species {
     type: string;
     scientificName: string;
     names?: string[];
+}
+
+export interface HierarchyNode {
+    name: string;
+    type: string;
 }
