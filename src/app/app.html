@@ -1,1 +1,5 @@
-<app-species [speciesId]="answer()"></app-species>
+<input [(ngModel)]="inputName"/><br>
+@for (name of namesOptions(); track name)
+{
+    <button>{{ name }}</button><br>
+}

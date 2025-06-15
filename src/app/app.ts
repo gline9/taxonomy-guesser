@@ -1,14 +1,20 @@
-import { Component, computed, signal } from '@angular/core';
+import { Component, computed, inject, model, signal } from '@angular/core';
 import options from "../../data/options.json";
-import { SpeciesComponent } from "./species/species";
+import { NamesService } from './names.service';
+import { FormsModule } from '@angular/forms';
 
 @Component({
     selector: 'app-root',
-    imports: [SpeciesComponent],
+    imports: [FormsModule],
     templateUrl: './app.html',
     styleUrl: './app.scss'
 })
 export class App {
+
+    readonly namesService = inject(NamesService);
+
+    readonly inputName = model<string>("");
+    readonly namesOptions = computed(() => this.namesService.getNamesMatching(this.inputName()));
 
     readonly answer = signal<string>(this.pickRandomId());
 
