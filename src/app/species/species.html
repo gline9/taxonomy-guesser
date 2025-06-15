@@ -1,0 +1,6 @@
+{{ species()?.scientificName }}<br>
+@for (name of species()?.names ?? []; track name) {
+    {{ name }}<br>
+}
+
+<img src="{{imageUrl()}}" width="400px" height="400px"/>
