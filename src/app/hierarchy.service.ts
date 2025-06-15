@@ -25,7 +25,7 @@ type SpeciesMap = {
     [K in string]: Species;
 }
 
-interface Species {
+export interface Species {
     id: string;
     parentId: string;
     type: string;

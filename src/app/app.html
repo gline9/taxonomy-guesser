@@ -1,5 +1,13 @@
 <input [(ngModel)]="inputName"/><br>
-@for (name of namesOptions(); track name)
+@for (species of namesOptions(); track species.id)
 {
-    <button>{{ name }}</button><br>
+    <button (click)="guessSpecies(species)">
+        @for (name of (species.names ?? []).sort(sortByLength); track $index)
+        {
+            {{ name }}
+            @if (!$last) {
+                ,&nbsp;
+            }
+        }
+    </button><br>
 }
