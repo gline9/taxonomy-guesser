@@ -73,7 +73,7 @@ export class App {
     {
         let ret = firstHierarchy[0];
         let index = 0;
-        while (firstHierarchy[index].name === secondHierarchy[index].name && firstHierarchy[index] != null)
+        while (index < firstHierarchy.length && firstHierarchy[index].name === secondHierarchy[index]?.name && firstHierarchy[index] != null)
         {
             ret = firstHierarchy[index++];
         }

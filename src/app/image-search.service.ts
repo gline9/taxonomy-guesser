@@ -1,4 +1,4 @@
-import { HttpClient } from "@angular/common/http";
+import { HttpClient, HttpParams } from "@angular/common/http";
 import { computed, inject, Injectable, Injector, Signal, untracked } from "@angular/core";
 import { key } from "../key.json";
 import { map } from "rxjs";
@@ -21,13 +21,31 @@ export class ImageSearchService
             return this.imageUrlMap[text];
         }
 
-        const ret = untracked(() => toSignal(
-            this.httpClient.get<ImageResults>(`https://www.googleapis.com/customsearch/v1?key=${encodeURIComponent(key)}&cx=268a54f600bbd4c96&q=${encodeURIComponent(text)}&searchType=image&num=1`, {observe: 'body'})
+        const ret = untracked(() => {
+            const params = new HttpParams()
+                .appendAll({
+                    key,
+                    cx: "268a54f600bbd4c96",
+                    q: text,
+                    searchType: "image",
+                    imgType: "photo",
+                    siteSearch: "wikipedia.org",
+                    siteSearchFilter: "i",
+                    num: 10
+                })
+            return toSignal(
+            this.httpClient.get<ImageResults>(
+                `https://www.googleapis.com/customsearch/v1`,
+                    {
+                        observe: 'body',
+                        params
+                    }
+                )
                 .pipe(map(value => this.sanitizer.bypassSecurityTrustUrl(value.items[0].link))),
             {
                 injector: this.injector
-            }
-        ));
+            });
+        });
 
         this.imageUrlMap[text] = ret;
         return ret;

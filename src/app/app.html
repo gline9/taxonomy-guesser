@@ -1,4 +1,4 @@
-<input [(ngModel)]="inputName"/><br>
+<input [(ngModel)]="inputName" (keyup.enter)="guessSpecies(namesOptions()[0])"/><br>
 @for (species of namesOptions(); track species.id)
 {
     <button (click)="guessSpecies(species)">
@@ -14,4 +14,4 @@
 <div style="color: green">
     {{ closestAncestor()?.name }}
 </div><br>
-<img [src]="closestImage()" width="500" height="500"/>
+<img [src]="closestImage()" height="500"/>
