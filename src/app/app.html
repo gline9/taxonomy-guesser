@@ -1,7 +1,13 @@
-<input [(ngModel)]="inputName" (keyup.enter)="guessSpecies(namesOptions()[0])"/><br>
-@for (species of namesOptions(); track species.id)
-{
-    <button (click)="guessSpecies(species)">
+<p-auto-complete
+    [minLength]="2"
+    [suggestions]="namesOptions()"
+    [(ngModel)]="selectedSpecies"
+    (completeMethod)="inputName.set($event.query)"
+    [delay]="0"
+    [showClear]="true"
+    optionLabel="scientificName"
+    [forceSelection]="true">
+    <ng-template let-species #item>
         @for (name of (species.names ?? []).sort(sortByLength); track $index)
         {
             {{ name }}
@@ -9,8 +15,8 @@
                 ,&nbsp;
             }
         }
-    </button><br>
-}
+    </ng-template>
+</p-auto-complete>
 <div style="color: green">
     {{ closestAncestor()?.name }}
 </div><br>
