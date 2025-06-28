@@ -23,7 +23,7 @@ jobs:
     - name: Archive Build
       uses: actions/upload-pages-artifact@v3
       with:
-        path: dist/browser/
+        path: dist/taxonomy-guesser/browser/
     - name: Deploy to GitHub Pages
       uses: actions/deploy-pages@v4
 
