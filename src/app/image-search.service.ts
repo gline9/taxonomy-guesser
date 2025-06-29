@@ -3,7 +3,7 @@ import { computed, inject, Injectable, Injector, Signal, untracked } from "@angu
 import { key } from "../key.json";
 import { map } from "rxjs";
 import { toSignal } from "@angular/core/rxjs-interop";
-import { DomSanitizer, SafeResourceUrl, SafeUrl } from "@angular/platform-browser";
+import { DomSanitizer, SafeUrl } from "@angular/platform-browser";
 
 @Injectable({providedIn: 'root'})
 export class ImageSearchService
@@ -12,9 +12,22 @@ export class ImageSearchService
     readonly injector = inject(Injector);
     readonly sanitizer = inject(DomSanitizer);
 
-    readonly imageUrlMap: {[K in string]?: Signal<SafeUrl | undefined>} = {};
+    readonly imageUrlMap: {[K in string]?: Signal<SafeUrl[]>} = {};
 
-    public getImage(text: string): Signal<SafeUrl | undefined>
+    public getImageForSignal(textSignal: Signal<string | undefined>): Signal<SafeUrl[]>
+    {
+        return computed(() => {
+            const text = textSignal();
+            if (null == text)
+            {
+                return [];
+            }
+
+            return this.getImage(text)();
+        });
+    }
+
+    public getImage(text: string): Signal<SafeUrl[]>
     {
         if (null != this.imageUrlMap[text])
         {
@@ -29,8 +42,6 @@ export class ImageSearchService
                     q: text,
                     searchType: "image",
                     imgType: "photo",
-                    siteSearch: "wikipedia.org",
-                    siteSearchFilter: "i",
                     num: 10
                 })
             return toSignal(
@@ -41,9 +52,10 @@ export class ImageSearchService
                         params
                     }
                 )
-                .pipe(map(value => this.sanitizer.bypassSecurityTrustUrl(value.items[0].link))),
+                .pipe(map(value => value.items.map(item => this.sanitizer.bypassSecurityTrustUrl(item.link)))),
             {
-                injector: this.injector
+                injector: this.injector,
+                initialValue: []
             });
         });
 

@@ -1,23 +1,15 @@
-<p-auto-complete
-    [minLength]="2"
-    [suggestions]="namesOptions()"
-    [(ngModel)]="selectedSpecies"
-    (completeMethod)="inputName.set($event.query)"
-    [delay]="0"
-    [showClear]="true"
-    optionLabel="scientificName"
-    [forceSelection]="true">
-    <ng-template let-species #item>
-        @for (name of (species.names ?? []).sort(sortByLength); track $index)
-        {
-            {{ name }}
-            @if (!$last) {
-                ,&nbsp;
-            }
-        }
-    </ng-template>
-</p-auto-complete>
-<div style="color: green">
-    {{ closestAncestor()?.name }}
-</div><br>
-<img [src]="closestImage()" height="500"/>
+@for (image of answerPicture(); track $index)
+{
+    <img [src]="image" height="200"/>
+}
+
+<div class="options">
+    @for (child of currentChildren(); track child.id)
+    {
+        <p-button
+            label="{{child.scientificName}} - {{child.type}}"
+            [variant]="guessed().includes(child.id) ? undefined : 'outlined'"
+            [severity]="guessed().includes(child.id) ? (child.correct ? 'success' : 'danger') : 'secondary'"
+            (onClick)="appendGuess(child.id)"/>
+    }
+</div>

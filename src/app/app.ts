@@ -1,14 +1,13 @@
 import { Component, computed, effect, inject, model, signal } from '@angular/core';
 import options from "../../data/options.json";
 import { NamesService } from './names.service';
-import { FormsModule } from '@angular/forms';
-import { HierarchyNode, HierarchyService, Species } from './hierarchy.service';
+import { HierarchyNode, HierarchyService, TaxonomyNode } from './hierarchy.service';
 import { ImageSearchService } from './image-search.service';
-import { AutoCompleteModule } from 'primeng/autocomplete';
+import { ButtonModule } from 'primeng/button';
 
 @Component({
     selector: 'app-root',
-    imports: [FormsModule, AutoCompleteModule],
+    imports: [ButtonModule],
     templateUrl: './app.html',
     styleUrl: './app.scss'
 })
@@ -20,48 +19,28 @@ export class App {
 
     readonly inputName = model<string>("");
     readonly namesOptions = computed(() => this.namesService.getNamesMatching(this.inputName()));
-    readonly selectedSpecies = signal<Species | undefined>(undefined);
+    readonly selectedSpecies = signal<TaxonomyNode | undefined>(undefined);
 
     readonly answer = signal<string>(this.pickRandomId());
+    readonly answerName = computed(() => this.hierarchyService.getSpeciesDetails(this.answer())?.scientificName);
+    readonly answerPicture = this.imageService.getImageForSignal(this.answerName);
     readonly answerHierarchy = computed(() => this.hierarchyService.getSpeciesHierarchy(this.answer()));
 
-    readonly guess = signal<string | undefined>(undefined);
-    readonly closestAncestor = computed(() => {
-        const guess = this.guess();
+    readonly currentLevel = signal<string>("1");
+    readonly currentChildren = computed(() => this.mapChildren(this.hierarchyService.getChildren(this.currentLevel()), this.answerHierarchy()));
 
-        if (null == guess)
-        {
-            return undefined;
-        }
-
-        const answerHierarchy = this.answerHierarchy();
-        const guessHierarchy = this.hierarchyService.getSpeciesHierarchy(guess);
-
-        if (null == answerHierarchy || null == guessHierarchy)
-        {
-            return undefined;
-        }
-
-        return this.getCommonRoot(answerHierarchy, guessHierarchy);
-    })
-
-    readonly closestImage = computed(() => {
-        const closestAncestor = this.closestAncestor();
-        if (null == closestAncestor)
-        {
-            return undefined;
-        }
-
-        return this.imageService.getImage(closestAncestor.name)();
-    })
+    readonly guessed = signal<string[]>([]);
 
     constructor()
     {
         effect(() => {
-            const selectedSpecies = this.selectedSpecies();
-            if (null != selectedSpecies)
+            const correctId = this.currentChildren().find(child => child.correct)?.id ?? "";
+            if (this.guessed().includes(correctId))
             {
-                this.guessSpecies(selectedSpecies);
+                setTimeout(() => {
+                    this.guessed.set([]);
+                    this.currentLevel.set(correctId);
+                }, 1000);
             }
         })
     }
@@ -71,28 +50,34 @@ export class App {
         return options[Math.floor(Math.random() * options.length)];
     }
 
-    guessSpecies(species: Species)
+    mapChildren(children: TaxonomyNode[], answerHierarchy: HierarchyNode[] | undefined): ChildOptions[]
     {
-        this.guess.set(species.id);
-        this.inputName.set("");
-        this.selectedSpecies.set(undefined);
-    }
-
-    sortByLength(a: string, b: string): number
-    {
-        return a.length - b.length;
-    }
-
-    getCommonRoot(firstHierarchy: HierarchyNode[], secondHierarchy: HierarchyNode[]): HierarchyNode
-    {
-        let ret = firstHierarchy[0];
-        let index = 0;
-        while (index < firstHierarchy.length && firstHierarchy[index].name === secondHierarchy[index]?.name && firstHierarchy[index] != null)
+        if (null == answerHierarchy)
         {
-            ret = firstHierarchy[index++];
+            return [];
+        }
+
+        const ret: ChildOptions[] = [];
+
+        for (const child of children)
+        {
+            ret.push({
+                ...child, 
+                correct: answerHierarchy.find(level => level.id === child.id) != null
+            })
         }
 
         return ret;
     }
+
+    appendGuess(guess: string)
+    {
+        this.guessed.update((guessed) => [...guessed, guess]);
+    }
+}
+
+interface ChildOptions extends TaxonomyNode
+{
+    correct: boolean;
 }
 

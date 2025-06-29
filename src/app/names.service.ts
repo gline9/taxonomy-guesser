@@ -1,6 +1,6 @@
 import { httpResource } from "@angular/common/http";
 import { computed, inject, Injectable } from "@angular/core";
-import { HierarchyService, Species } from "./hierarchy.service";
+import { HierarchyService, TaxonomyNode } from "./hierarchy.service";
 
 @Injectable({providedIn: 'root'})
 export class NamesService
@@ -18,7 +18,7 @@ export class NamesService
         return Object.keys(nameMap).sort();
     });
 
-    getNamesMatching(search: string): Species[]
+    getNamesMatching(search: string): TaxonomyNode[]
     {
         if (search.length < 2)
         {
