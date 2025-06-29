@@ -1,7 +1,7 @@
 import { Component, computed, effect, inject, model, signal } from '@angular/core';
 import options from "../../data/options.json";
 import { NamesService } from './names.service';
-import { HierarchyNode, HierarchyService, TaxonomyNode } from './hierarchy.service';
+import { ChildNode, HierarchyNode, HierarchyService, TaxonomyNode } from './hierarchy.service';
 import { ImageSearchService } from './image-search.service';
 import { ButtonModule } from 'primeng/button';
 
@@ -50,7 +50,7 @@ export class App {
         return options[Math.floor(Math.random() * options.length)];
     }
 
-    mapChildren(children: TaxonomyNode[], answerHierarchy: HierarchyNode[] | undefined): ChildOptions[]
+    mapChildren(children: ChildNode[], answerHierarchy: HierarchyNode[] | undefined): ChildOptions[]
     {
         if (null == answerHierarchy)
         {
@@ -76,7 +76,7 @@ export class App {
     }
 }
 
-interface ChildOptions extends TaxonomyNode
+interface ChildOptions extends ChildNode
 {
     correct: boolean;
 }

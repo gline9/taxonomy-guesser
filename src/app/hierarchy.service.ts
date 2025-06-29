@@ -38,7 +38,34 @@ export class HierarchyService
             ret[hierarchy[id].parentId].push(hierarchy[id]);
         }
 
+        for (const id of Object.keys(ret))
+        {
+            for (const child of ret[id])
+            {
+                if (null != child.children)
+                {
+                    continue;
+                }
+
+                child.children = this.getNumChildren(child.id, ret);
+            }
+        }
+
         return ret;
+    }
+
+    private getNumChildren(id: string, map: ChildrenMap): number
+    {
+        if (null == map[id])
+        {
+            return 1;
+        }
+
+        return map[id].map(child => {
+            const numChildren = this.getNumChildren(child.id, map);
+            child.children = numChildren;
+            return numChildren;
+        }).reduce((a, b) => a + b, 0);
     }
 
     public getSpeciesDetails(id: string): TaxonomyNode | undefined
@@ -80,8 +107,6 @@ export class HierarchyService
             currentId = currentNode.parentId;
         }
 
-        console.log("hierarchy", retHierarchy);
-
         return retHierarchy.reverse();
     }
 }
@@ -91,7 +116,11 @@ type TaxonomyMap = {
 }
 
 type ChildrenMap = {
-    [K in string]: TaxonomyNode[];
+    [K in string]: ChildNode[];
+}
+
+export interface ChildNode extends TaxonomyNode {
+    children?: number;
 }
 
 export interface TaxonomyNode {
