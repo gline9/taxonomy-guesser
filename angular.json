@@ -44,8 +44,7 @@
                   "maximumError": "8kB"
                 }
               ],
-              "outputHashing": "all",
-              "baseHref": "/taxonomy-guesser"
+              "outputHashing": "all"
             },
             "development": {
               "optimization": false,
