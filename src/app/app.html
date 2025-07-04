@@ -6,10 +6,13 @@
 <div class="options">
     @for (child of currentChildren(); track child.id)
     {
-        <p-button
-            label="{{child.scientificName}} - {{child.type}} - {{child.children}}"
-            [variant]="guessed().includes(child.id) ? undefined : 'outlined'"
-            [severity]="guessed().includes(child.id) ? (child.correct ? 'success' : 'danger') : 'secondary'"
-            (onClick)="appendGuess(child.id)"/>
+        <div class="option">
+            <p-button
+                label="{{child.scientificName}} - {{child.type}} - {{child.children}}"
+                [variant]="child.guessed ? undefined : 'outlined'"
+                [severity]="child.guessed ? (child.correct ? 'success' : 'danger') : 'secondary'"
+                (onClick)="appendGuess(child)"/>
+            {{ child.description }}
+        </div>
     }
 </div>

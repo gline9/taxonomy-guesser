@@ -1,66 +1,50 @@
 import { HttpClient, HttpParams } from "@angular/common/http";
-import { computed, inject, Injectable, Injector, Signal, untracked } from "@angular/core";
+import { computed, inject, Injectable, Signal } from "@angular/core";
 import { key } from "../key.json";
-import { map } from "rxjs";
-import { toSignal } from "@angular/core/rxjs-interop";
+import { map, Observable } from "rxjs";
 import { DomSanitizer, SafeUrl } from "@angular/platform-browser";
+import { CachingHttpService } from "./caching-http.service";
 
 @Injectable({providedIn: 'root'})
-export class ImageSearchService
+export class ImageSearchService extends CachingHttpService<SafeUrl[]>
 {
     readonly httpClient = inject(HttpClient);
-    readonly injector = inject(Injector);
     readonly sanitizer = inject(DomSanitizer);
 
-    readonly imageUrlMap: {[K in string]?: Signal<SafeUrl[]>} = {};
+    override getInitialValue(): SafeUrl[]
+    {
+        return [];
+    }
+
+    override getByRequest(request: string): Observable<SafeUrl[]>
+    {
+        const params = new HttpParams()
+            .appendAll({
+                key,
+                cx: "268a54f600bbd4c96",
+                q: request,
+                searchType: "image",
+                imgType: "photo",
+                num: 10
+            })
+        return this.httpClient.get<ImageResults>(
+            `https://www.googleapis.com/customsearch/v1`,
+                {
+                    observe: 'body',
+                    params
+                }
+            )
+            .pipe(map(value => value.items.map(item => this.sanitizer.bypassSecurityTrustUrl(item.link))));
+    }
 
     public getImageForSignal(textSignal: Signal<string | undefined>): Signal<SafeUrl[]>
     {
-        return computed(() => {
-            const text = textSignal();
-            if (null == text)
-            {
-                return [];
-            }
-
-            return this.getImage(text)();
-        });
+        return this.queryForSignal(textSignal);
     }
 
     public getImage(text: string): Signal<SafeUrl[]>
     {
-        if (null != this.imageUrlMap[text])
-        {
-            return this.imageUrlMap[text];
-        }
-
-        const ret = untracked(() => {
-            const params = new HttpParams()
-                .appendAll({
-                    key,
-                    cx: "268a54f600bbd4c96",
-                    q: text,
-                    searchType: "image",
-                    imgType: "photo",
-                    num: 10
-                })
-            return toSignal(
-            this.httpClient.get<ImageResults>(
-                `https://www.googleapis.com/customsearch/v1`,
-                    {
-                        observe: 'body',
-                        params
-                    }
-                )
-                .pipe(map(value => value.items.map(item => this.sanitizer.bypassSecurityTrustUrl(item.link)))),
-            {
-                injector: this.injector,
-                initialValue: []
-            });
-        });
-
-        this.imageUrlMap[text] = ret;
-        return ret;
+        return this.queryForValue(text);
     }
 }
 
