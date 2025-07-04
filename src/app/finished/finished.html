@@ -1,0 +1,5 @@
+<p-dialog [visible]="true" [modal]="true" [header]="speciesLeft() == 0 ? 'You Win!' : 'Out of Lives!'">
+    <p-button
+        label="Share your results."
+        (onClick)="copyResults()"/>
+</p-dialog>

@@ -5,10 +5,11 @@ import { ChildNode, HierarchyNode, HierarchyService, TaxonomyNode } from './hier
 import { ImageSearchService } from './image-search.service';
 import { ButtonModule } from 'primeng/button';
 import { WikipediaService } from './wikipedia.service';
+import { FinishedPageComponent } from "./finished/finished";
 
 @Component({
     selector: 'app-root',
-    imports: [ButtonModule],
+    imports: [ButtonModule, FinishedPageComponent],
     templateUrl: './app.html',
     styleUrl: './app.scss'
 })
@@ -31,13 +32,30 @@ export class App {
     readonly currentLevel = signal<string>("1");
     readonly guessedRaw = signal<ChildNode[]>([]);
     readonly currentChildren = computed(() => this.mapChildren(this.hierarchyService.getChildren(this.currentLevel()), this.answerHierarchy(), this.guessedRaw()));
+    readonly currentCorrect = computed(() => this.currentChildren().find(child => child.correct)?.id ?? undefined);
+    readonly speciesLeft = computed(() => this.currentChildren().map((child) => child.guessed ? 0 : child.children ?? 0).reduce((a, b) => a + b, 0));
 
     readonly wrongGuesses = signal<number>(0);
+    readonly lives = computed(() => {
+        const ret: string[] = [];
+        const wrong = this.wrongGuesses();
+        for (let i = 0; i < 5 - wrong; i++)
+        {
+            ret.push('pi-heart-fill');
+        }
+
+        for (let i = 0; i < wrong; i++)
+        {
+            ret.push('pi-heart');
+        }
+        
+        return ret;
+    })
 
     constructor()
     {
         effect(() => {
-            const correctId = this.currentChildren().find(child => child.correct)?.id ?? undefined;
+            const correctId = this.currentCorrect();
             if (null == correctId)
             {
                 return;
@@ -83,7 +101,12 @@ export class App {
 
     appendGuess(guess: ChildNode)
     {
+        const correct = guess.id === this.currentCorrect();
         this.guessedRaw.update((guessed) => [...guessed, guess]);
+        if (!correct)
+        {
+            this.wrongGuesses.update(guesses => guesses + 1);
+        }
     }
 
     computeGuessedInfo(guessed: ChildNode[]): GuessedOption[]

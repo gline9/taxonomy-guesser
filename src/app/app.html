@@ -4,6 +4,12 @@
 }
 
 <div class="options">
+    <div class="hearts">
+        @for (icon of lives(); track $index)
+        {
+            <span class="pi {{icon}}" style="color: var(--p-primary-color)"></span>
+        }
+    </div>
     @for (child of currentChildren(); track child.id)
     {
         <div class="option">
@@ -17,3 +23,10 @@
         </div>
     }
 </div>
+@if (currentLevel() === answer() || wrongGuesses() === 5)
+{
+    <app-finished-page
+        [livesLeft]="5 - wrongGuesses()"
+        [speciesLeft]="speciesLeft()">
+    </app-finished-page>
+}
