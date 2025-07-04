@@ -32,6 +32,8 @@ export class App {
     readonly guessedRaw = signal<ChildNode[]>([]);
     readonly currentChildren = computed(() => this.mapChildren(this.hierarchyService.getChildren(this.currentLevel()), this.answerHierarchy(), this.guessedRaw()));
 
+    readonly wrongGuesses = signal<number>(0);
+
     constructor()
     {
         effect(() => {

@@ -10,6 +10,7 @@
             <p-button
                 label="{{child.scientificName}} - {{child.type}} - {{child.children}}"
                 [variant]="child.guessed ? undefined : 'outlined'"
+                [raised]="true"
                 [severity]="child.guessed ? (child.correct ? 'success' : 'danger') : 'secondary'"
                 (onClick)="appendGuess(child)"/>
             {{ child.description }}
