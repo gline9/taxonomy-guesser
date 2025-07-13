@@ -4,7 +4,7 @@
   "scripts": {
     "ng": "ng",
     "start": "node -r dotenv/config envreader.js development && ng serve",
-    "build": "node -r dotenv/config envreader.js production && ng build --base-href /taxonomy-guesser/",
+    "build": "node -r dotenv/config envreader.js production && ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test"
   },
