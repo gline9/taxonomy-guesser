@@ -1,6 +1,6 @@
 import { HttpClient, HttpParams } from "@angular/common/http";
 import { computed, inject, Injectable, Signal } from "@angular/core";
-import { key } from "../key.json";
+import { environment } from "../environments/environment";
 import { map, Observable } from "rxjs";
 import { DomSanitizer, SafeUrl } from "@angular/platform-browser";
 import { CachingHttpService } from "./caching-http.service";
@@ -20,7 +20,7 @@ export class ImageSearchService extends CachingHttpService<SafeUrl[]>
     {
         const params = new HttpParams()
             .appendAll({
-                key,
+                key: environment.GOOGLE_KEY,
                 cx: "268a54f600bbd4c96",
                 q: request,
                 searchType: "image",
